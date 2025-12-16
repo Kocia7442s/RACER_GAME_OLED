@@ -74,6 +74,7 @@ typedef struct {
     uint16_t obstacle_spawn_counter;
     time_t game_start_time;
     uint8_t game_over;
+    uint8_t screen_needs_refresh;
 } GameData;
 
 /* ======================= BUTTON INPUTS ======================= */

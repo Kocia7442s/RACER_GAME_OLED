@@ -16,15 +16,14 @@ void game_init(GameData* game, int oled_fd) {
     game->player_car.y = CAR_Y_POS;
     game->player_car.width = CAR_WIDTH;
     game->player_car.height = CAR_HEIGHT;
-    game->player_car.lane = 1;  // Start in center lane
+    game->player_car.lane = 1;  // Commencer dans la ligne centrale
     
     game->score = 0;
     game->distance = 0;
     game->obstacle_spawn_counter = 0;
     game->game_over = 0;
-    
-    // Clear screen
-    goldelox_clear_screen(oled_fd);
+    game->screen_needs_refresh = 1;
+
     usleep(500000);
 }
 
@@ -33,7 +32,7 @@ void game_reset(GameData* game) {
     game->distance = 0;
     game->obstacle_spawn_counter = 0;
     game->game_over = 0;
-    game->player_car.lane = 1;  // Center lane
+    game->player_car.lane = 1;
     
     // Clear all obstacles
     for (int i = 0; i < MAX_OBSTACLES; i++) {
@@ -49,16 +48,16 @@ void render_startscreen(int oled_fd, GameData* game) {
     goldelox_clear_screen(oled_fd);
     
     // Draw title
-    // goldelox_text_foreground_color(oled_fd, COLOR_WHITE);
-    // goldelox_put_string(oled_fd, "RACER");
+    goldelox_text_foreground_color(oled_fd, COLOR_WHITE);
+    goldelox_put_string(oled_fd, "RACER");
     
     // Draw instructions
     // goldelox_move_cursor(oled_fd, 0, 16);
     // goldelox_text_foreground_color(oled_fd, COLOR_RED);
-    // goldelox_put_string(oled_fd, "LEFT/RIGHT BUTTONS");
-    // goldelox_put_string(oled_fd, "to move car");
+    // goldelox_put_string(oled_fd, "BOUTONS GAUCHE/DROITE");
+    // goldelox_put_string(oled_fd, "Pour bouger la voiture");
     
-    // goldelox_put_string(oled_fd, "Avoid obstacles!");
+    // goldelox_put_string(oled_fd, "Eviter les obstacles!");
     
     // Display high score
     // char score_text[50];
@@ -66,8 +65,8 @@ void render_startscreen(int oled_fd, GameData* game) {
     // goldelox_put_string(oled_fd, score_text);
     
     // Start instruction
-    // goldelox_put_string(oled_fd, "PRESS SELECT");
-    // goldelox_put_string(oled_fd, "to start");
+    // goldelox_put_string(oled_fd, "Appuye sur SELECT");
+    // goldelox_put_string(oled_fd, "pour commencer");
 }
 
 void game_update(GameData* game, ButtonState* buttons) {
@@ -76,6 +75,7 @@ void game_update(GameData* game, ButtonState* buttons) {
             if (buttons->select_pressed) {
                 game_reset(game);
                 game->current_state = STATE_PLAYING;
+                game->screen_needs_refresh = 1;
             }
             break;
             
@@ -87,6 +87,7 @@ void game_update(GameData* game, ButtonState* buttons) {
             
             if (game->game_over) {
                 game->current_state = STATE_HIGHSCORE;
+                game->screen_needs_refresh = 1;
             }
             break;
             
@@ -94,6 +95,7 @@ void game_update(GameData* game, ButtonState* buttons) {
         case STATE_GAMEOVER:
             if (buttons->select_pressed) {
                 game->current_state = STATE_STARTSCREEN;
+                game->screen_needs_refresh = 1;
             }
             break;
             
@@ -106,6 +108,7 @@ void game_render(int oled_fd, GameData* game) {
     switch(game->current_state) {
         case STATE_STARTSCREEN:
             render_startscreen(oled_fd, game);
+            game->screen_needs_refresh = 0;
             break;
             
         case STATE_PLAYING:
@@ -115,6 +118,7 @@ void game_render(int oled_fd, GameData* game) {
         case STATE_HIGHSCORE:
         case STATE_GAMEOVER:
             // render_highscore(oled_fd, game);
+            game->screen_needs_refresh = 0;
             break;
             
         default:

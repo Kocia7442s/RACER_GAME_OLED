@@ -124,15 +124,11 @@ void goldelox_draw_circle(int fd, uint16_t x, uint16_t y, uint16_t rad, uint16_t
         rad >> 8, rad & 0xFF,
         color >> 8, color & 0xFF
     };
-    write(fd, packet, 10);
-    tcdrain(fd);
-    usleep(200000);
-    uint8_t response[1];
-    ssize_t bytes_read = read(fd, response, 1);
-    if (bytes_read > 0 && response[0] == 0x06)
-        printf("✓ Cercle dessiné (ACK reçu)\n");
-    else
-        printf("✗ Draw Circle: pas d'ACK\n");
+    if(_goldelox_send_and_wait_ack(fd, packet, 10) == 0) {
+        printf("✓ Cercle dessiné\n");
+    } else {
+        fprintf(stderr, "✗ Draw Circle: pas d'ACK\n");
+    }
 }
 
 void goldelox_draw_filled_circle(int fd, uint16_t x, uint16_t y, uint16_t rad, uint16_t color) {
