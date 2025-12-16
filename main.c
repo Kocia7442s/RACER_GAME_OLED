@@ -180,8 +180,8 @@ int open_serial(const char* port) {
     }
 
     // Configuration des vitesses de transmission asynchrone
-    cfsetospeed(&tty, B115200); // vitesse de sortie (TXD) - 115200 baud
-    cfsetispeed(&tty, B115200); // vitesse d'entrée (RXD) - 115200 baud
+    cfsetospeed(&tty, B9600); // vitesse de sortie (TXD) - 115200 baud
+    cfsetispeed(&tty, B9600); // vitesse d'entrée (RXD) - 115200 baud
 
     // Configuration des bits de données
     tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;     // 8 bits de données
@@ -247,11 +247,14 @@ int main(int argc, char* argv[]) {
     
     // Open OLED serial port
     oled_fd = open_serial("/dev/ttyAL0");
-    goldelox_set_baudrate(oled_fd, 115200);
     if (oled_fd < 0) {
         fprintf(stderr, "Erreur d'ouverture OLED serial port\n");
         return 1;
     }
+
+    printf("Initialisation série terminée. Passage en haute vitesse...\n");
+    goldelox_set_baudrate(oled_fd, 115200);
+    usleep(200000);
     
     // Initialize GPIO buttons
     if (init_gpio_buttons(&gpio_buttons) < 0) {

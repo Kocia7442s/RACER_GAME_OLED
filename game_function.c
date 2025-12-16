@@ -46,16 +46,16 @@ void game_reset(GameData* game) {
 
 void render_startscreen(int oled_fd, GameData* game) {
     printf("DEBUG: render_startscreen appelé !\n");
-    goldelox_clear_screen(oled_fd);
+    // goldelox_clear_screen(oled_fd);
     
     // Draw title
-    goldelox_text_foreground_color(oled_fd, COLOR_WHITE);
-    goldelox_put_string(oled_fd, "RACER");
+    // goldelox_text_foreground_color(oled_fd, COLOR_WHITE);
+    // goldelox_put_string(oled_fd, "RACER");
     
     // Draw instructions
     // goldelox_move_cursor(oled_fd, 0, 16);
-    goldelox_text_foreground_color(oled_fd, COLOR_RED);
-    goldelox_put_string(oled_fd, "BOUTONS GAUCHE/DROITE");
+    // goldelox_text_foreground_color(oled_fd, COLOR_RED);
+    // goldelox_put_string(oled_fd, "BOUTONS GAUCHE/DROITE");
     // goldelox_put_string(oled_fd, "Pour bouger la voiture");
     
     // goldelox_put_string(oled_fd, "Eviter les obstacles!");
