@@ -37,12 +37,18 @@ static int _goldelox_send_and_wait_ack(int fd, uint8_t* packet, int length) {
 
 /* ======================= TEXT & STRING COMMANDS ======================= */
 void goldelox_move_cursor(int fd, uint8_t col, uint8_t row) {
-    uint8_t packet[4];
-    packet[0] = 0xFF;
+    uint8_t packet[6];
+
+    packet[0] = 0xFF; 
     packet[1] = 0xE4;
-    packet[2] = col;
+
+    packet[2] = 0x00;
     packet[3] = row;
-    if(_goldelox_send_and_wait_ack(fd, packet, 4) == 0) {
+
+    packet[4] = 0x00;
+    packet[5] = col;
+
+    if(_goldelox_send_and_wait_ack(fd, packet, 6) == 0) {
         printf("✓ Curseur déplacé (ACK reçu)\n");
     } else {
         printf("✗ Move cursor: pas d'ACK\n");
@@ -92,6 +98,29 @@ void goldelox_text_foreground_color(int fd, uint16_t color) {
         printf("✓ Couleur texte changée (ACK reçu)\n");
     } else {
         printf("✗ Foreground color: pas d'ACK\n");
+    }
+}
+
+void goldelox_text_width(int fd, uint16_t multiplier){
+    uint8_t packet[4];
+
+    // Sécurité : la doc précise que la valeur doit être entre 1 et 16.
+    if (multiplier < 1) multiplier = 1;
+    if (multiplier > 16) multiplier = 16;
+
+    // Commande 0xFF7C
+    packet[0] = 0xFF;
+    packet[1] = 0x7C;
+
+    // Multiplier sur 16 bits (MSB d'abord)
+    // Même si la valeur est petite, on respecte le format Word
+    packet[2] = (multiplier >> 8) & 0xFF; // MSB
+    packet[3] = multiplier & 0xFF;        // LSB
+
+    if(_goldelox_send_and_wait_ack(fd, packet, 4) == 0) {
+        printf("✓ Largeur texte x%d définie (ACK reçu)\n", multiplier);
+    } else {
+        printf("✗ Text Width: pas d'ACK\n");
     }
 }
 

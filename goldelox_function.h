@@ -9,6 +9,8 @@ void goldelox_put_string(int fd, const char* text);
 
 void goldelox_text_foreground_color(int fd, uint16_t color);
 
+void goldelox_text_width(int fd, uint16_t multiplier);
+
 
 
 
