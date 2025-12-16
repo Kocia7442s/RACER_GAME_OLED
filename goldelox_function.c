@@ -493,93 +493,17 @@ void goldelox_beep(int fd, uint16_t frequency, uint16_t duration) {
 
 /* ======================= SERIAL COMMUNICATIONS COMMANDS ======================= */
 // A tester
-int _get_goldelox_baud_index(uint32_t baudrate) {
-    switch(baudrate) {
-        case 110:    return 0;
-        case 300:    return 1;
-        case 600:    return 2;
-        case 1200:   return 3;
-        case 2400:   return 4;
-        case 4800:   return 5;
-        case 9600:   return 6;
-        case 14400:  return 7;
-        case 19200:  return 8;
-        case 31250:  return 9;
-        case 38400:  return 10;
-        case 56000:  return 11;
-        case 57600:  return 12;
-        case 115200: return 13;
-        case 128000: return 14;
-        case 256000: return 15;
-        default:     return -1;
-    }
-}
-
-// Convertit la vitesse numérique en constante termios Linux
-speed_t _get_termios_speed(uint32_t baudrate) {
-    switch(baudrate) {
-        case 9600:   return B9600;
-        case 19200:  return B19200;
-        case 38400:  return B38400;
-        case 57600:  return B57600;
-        case 115200: return B115200;
-        default:     return B0; 
-    }
-}
-
 void goldelox_set_baudrate(int fd, uint32_t baudrate) {
-    int index = _get_goldelox_baud_index(baudrate);
-    if (index == -1) {
-        fprintf(stderr, "Erreur: Baudrate %u non supporté\n", baudrate);
-        return;
-    }
-
-    uint8_t packet[4] = {
-        0x00, 
-        0x0B, 
-        (index >> 8) & 0xFF,
-        index & 0xFF
+    uint8_t packet[6] = {
+        0x00, 0x0B,
+        (baudrate >> 24) & 0xFF,
+        (baudrate >> 16) & 0xFF,
+        (baudrate >> 8) & 0xFF,
+        baudrate & 0xFF
     };
-
-    printf("Changement de baudrate vers %u (Index %d)...\n", baudrate, index);
-
-    tcflush(fd, TCIOFLUSH);
-    if (write(fd, packet, 4) != 4) {
-        perror("Erreur write");
-        return;
-    }
-    tcdrain(fd);
-
-    usleep(100000); 
-
-    struct termios tty;
-    if (tcgetattr(fd, &tty) != 0) {
-        perror("tcgetattr");
-        return;
-    }
-
-    speed_t speed = _get_termios_speed(baudrate);
-    if (speed == B0) {
-        fprintf(stderr, "Erreur vitesse Linux\n");
-        return;
-    }
-
-    cfsetospeed(&tty, speed);
-    cfsetispeed(&tty, speed);
-
-    tcflush(fd, TCIOFLUSH);
-    if (tcsetattr(fd, TCSANOW, &tty) != 0) {
-        perror("tcsetattr");
-        return;
-    }
-    printf("✓ Vitesse Linux mise à jour. Lecture de l'ACK...\n");
-
-    uint8_t response = 0;
-    int n = read(fd, &response, 1);
-    
-    if (n > 0 && response == 0x06) {
-        printf("✓ Baudrate changé avec succès (ACK 0x06 reçu à %u bauds)\n", baudrate);
+    if(_goldelox_send_and_wait_ack(fd, packet, 6) == 0) {
+        printf("✓ Baudrate changée (ACK reçu)\n");
     } else {
-        printf("✗ Échec : Pas d'ACK ou réponse incorrecte (Reçu: 0x%02X)\n", response);
+        printf("✗ Set Baudrate: pas d'ACK\n");
     }
 }
