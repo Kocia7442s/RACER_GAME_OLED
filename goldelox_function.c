@@ -63,16 +63,23 @@ void goldelox_put_character(int fd, char character) {
 }
 
 void goldelox_put_string(int fd, const char* text) {
-    uint8_t packet[3];
+    int len = strlen(text);
+    int packetSize = 2 + len + 1; 
+    
+    uint8_t* packet = (uint8_t*)malloc(packetSize);
+    if (!packet) return;
+
     packet[0] = 0x00;
     packet[1] = 0x06;
-    packet[2] = (uint8_t)strlen(text);
+    memcpy(&packet[2], text, len + 1); 
     
-    if(_goldelox_send_and_wait_ack(fd, packet, 3) == 0) {
+    if(_goldelox_send_and_wait_ack(fd, packet, packetSize) == 0) {
         printf("✓ Chaîne '%s' envoyée (ACK reçu)\n", text);
     } else {
-        printf("✗ Clear Screen: pas d'ACK\n");
+        printf("✗ Put String: pas d'ACK\n");
     }
+    
+    free(packet);
 }
 
 void goldelox_text_foreground_color(int fd, uint16_t color) {
@@ -139,15 +146,11 @@ void goldelox_draw_filled_circle(int fd, uint16_t x, uint16_t y, uint16_t rad, u
         rad >> 8, rad & 0xFF,
         color >> 8, color & 0xFF
     };
-    write(fd, packet, 10);
-    tcdrain(fd);
-    usleep(200000);
-    uint8_t response[1];
-    ssize_t bytes_read = read(fd, response, 1);
-    if (bytes_read > 0 && response[0] == 0x06)
-        printf("✓ Cercle rempli dessiné (ACK reçu)\n");
-    else
-        printf("✗ Draw Filled Circle: pas d'ACK\n");
+    if(_goldelox_send_and_wait_ack(fd, packet, 10) == 0) {
+        printf("✓ Cercle plein dessiné\n");
+    } else {
+        fprintf(stderr, "✗ Draw Filled Circle: pas d'ACK\n");
+    }
 }
 
 void goldelox_draw_line(int fd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
@@ -159,15 +162,11 @@ void goldelox_draw_line(int fd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t 
         y2 >> 8, y2 & 0xFF,
         color >> 8, color & 0xFF
     };
-    write(fd, packet, 12);
-    tcdrain(fd);
-    usleep(200000);
-    uint8_t response[1];
-    ssize_t bytes_read = read(fd, response, 1);
-    if (bytes_read > 0 && response[0] == 0x06)
-        printf("✓ Ligne dessinée (ACK reçu)\n");
-    else
-        printf("✗ Draw Line: pas d'ACK\n");
+    if(_goldelox_send_and_wait_ack(fd, packet, 12) == 0) {
+        printf("✓ Ligne dessiné\n");
+    } else {
+        fprintf(stderr, "✗ Draw line: pas d'ACK\n");
+    }
 }
 
 void goldelox_draw_rectangle(int fd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
@@ -179,15 +178,11 @@ void goldelox_draw_rectangle(int fd, uint16_t x1, uint16_t y1, uint16_t x2, uint
         y2 >> 8, y2 & 0xFF,
         color >> 8, color & 0xFF
     };
-    write(fd, packet, 12);
-    tcdrain(fd);
-    usleep(200000);
-    uint8_t response[1];
-    ssize_t bytes_read = read(fd, response, 1);
-    if (bytes_read > 0 && response[0] == 0x06)
-        printf("✓ Rectangle dessiné (ACK reçu)\n");
-    else
-        printf("✗ Draw Rectangle: pas d'ACK\n");
+    if(_goldelox_send_and_wait_ack(fd, packet, 12) == 0) {
+        printf("✓ Rectangle dessiné\n");
+    } else {
+        fprintf(stderr, "✗ Draw rectangle: pas d'ACK\n");
+    }
 }
 
 void goldelox_draw_filled_rectangle(int fd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
@@ -199,15 +194,11 @@ void goldelox_draw_filled_rectangle(int fd, uint16_t x1, uint16_t y1, uint16_t x
         y2 >> 8, y2 & 0xFF,
         color >> 8, color & 0xFF
     };
-    write(fd, packet, 12);
-    tcdrain(fd);
-    usleep(200000);
-    uint8_t response[1];
-    ssize_t bytes_read = read(fd, response, 1);
-    if (bytes_read > 0 && response[0] == 0x06)
-        printf("✓ Rectangle rempli dessiné (ACK reçu)\n");
-    else
-        printf("✗ Draw Filled Rectangle: pas d'ACK\n");
+    if(_goldelox_send_and_wait_ack(fd, packet, 10) == 0) {
+        printf("✓ Rectangle plein dessiné\n");
+    } else {
+        fprintf(stderr, "✗ Draw Filled Rectangle: pas d'ACK\n");
+    }
 }
 
 void goldelox_draw_polyline(int fd, const uint16_t* xPoints, const uint16_t* yPoints, size_t numPoints, uint16_t color) {
@@ -510,13 +501,9 @@ void goldelox_set_baudrate(int fd, uint32_t baudrate) {
         (baudrate >> 8) & 0xFF,
         baudrate & 0xFF
     };
-    write(fd, packet, 6);
-    tcdrain(fd);
-    usleep(200000);
-    uint8_t response[1];
-    ssize_t bytes_read = read(fd, response, 1);
-    if (bytes_read > 0 && response[0] == 0x06)
-        printf("✓ Baudrate défini à %u (ACK reçu)\n", baudrate);
-    else
+    if(_goldelox_send_and_wait_ack(fd, packet, 6) == 0) {
+        printf("✓ Baudrate changée (ACK reçu)\n");
+    } else {
         printf("✗ Set Baudrate: pas d'ACK\n");
+    }
 }

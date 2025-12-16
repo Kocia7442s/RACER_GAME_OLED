@@ -45,6 +45,7 @@ void game_reset(GameData* game) {
 /* ======================= RENDERING FUNCTIONS ======================= */
 
 void render_startscreen(int oled_fd, GameData* game) {
+    printf("DEBUG: render_startscreen appelé !\n");
     goldelox_clear_screen(oled_fd);
     
     // Draw title
@@ -53,8 +54,8 @@ void render_startscreen(int oled_fd, GameData* game) {
     
     // Draw instructions
     // goldelox_move_cursor(oled_fd, 0, 16);
-    // goldelox_text_foreground_color(oled_fd, COLOR_RED);
-    // goldelox_put_string(oled_fd, "BOUTONS GAUCHE/DROITE");
+    goldelox_text_foreground_color(oled_fd, COLOR_RED);
+    goldelox_put_string(oled_fd, "BOUTONS GAUCHE/DROITE");
     // goldelox_put_string(oled_fd, "Pour bouger la voiture");
     
     // goldelox_put_string(oled_fd, "Eviter les obstacles!");
@@ -107,8 +108,10 @@ void game_update(GameData* game, ButtonState* buttons) {
 void game_render(int oled_fd, GameData* game) {
     switch(game->current_state) {
         case STATE_STARTSCREEN:
-            render_startscreen(oled_fd, game);
-            game->screen_needs_refresh = 0;
+            if (game->screen_needs_refresh) {
+                render_startscreen(oled_fd, game);
+                game->screen_needs_refresh = 0;
+            }
             break;
             
         case STATE_PLAYING:
@@ -117,8 +120,10 @@ void game_render(int oled_fd, GameData* game) {
             
         case STATE_HIGHSCORE:
         case STATE_GAMEOVER:
-            // render_highscore(oled_fd, game);
-            game->screen_needs_refresh = 0;
+            if (game->screen_needs_refresh) {
+                // render_highscore(oled_fd, game);
+                game->screen_needs_refresh = 0;
+            }
             break;
             
         default:

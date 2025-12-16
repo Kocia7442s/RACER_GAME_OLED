@@ -107,7 +107,7 @@ int init_gpio_buttons(GPIO_Buttons* buttons) {
     buttons->pollfds[2].events = POLLIN;
     buttons->num_fds = 3;
     
-    printf("GPIO boutons initialisés avec succès\n");
+    // printf("GPIO boutons initialisés avec succès\n");
     return 0;
 }
 
@@ -169,7 +169,7 @@ int open_serial(const char* port) {
         perror("Erreur ouverture");
         return -1;
     } else {
-        printf("Port série %s ouvert avec succès.\n", port);
+        // printf("Port série %s ouvert avec succès.\n", port);
     }
 
     struct termios tty;
@@ -224,7 +224,7 @@ int open_serial(const char* port) {
         return -1;
     }
 
-    printf("Port série configuré en mode bloquant.\n");
+    // printf("Port série configuré en mode bloquant.\n");
     return fd;
 }
 
@@ -244,8 +244,10 @@ int main(int argc, char* argv[]) {
     
     printf("Game - Starting...\n");
     
+    
     // Open OLED serial port
     oled_fd = open_serial("/dev/ttyAL0");
+    goldelox_set_baudrate(oled_fd, 115200);
     if (oled_fd < 0) {
         fprintf(stderr, "Erreur d'ouverture OLED serial port\n");
         return 1;
@@ -265,7 +267,9 @@ int main(int argc, char* argv[]) {
     game_init(&game, oled_fd);
     
     printf("Initialisation du jeu completé. Commencement main loop...\n");
-    
+    goldelox_clear_screen(oled_fd);
+    usleep(100000);
+
     // Main game loop
     while (!sigFlagStop) {
         clock_gettime(CLOCK_MONOTONIC, &frame_start);
