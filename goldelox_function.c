@@ -8,7 +8,7 @@ static int _goldelox_send_and_wait_ack(int fd, uint8_t* packet, int length) {
     // Cela supprime tous les vieux ACKs ou bruits qui traînent.
     tcflush(fd, TCIFLUSH);
 
-    // 2. Écriture du paquet
+    // Écriture du paquet
     if (write(fd, packet, length) != length) {
         perror("Erreur write");
         return -1;
