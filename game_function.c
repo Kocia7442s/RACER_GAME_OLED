@@ -34,7 +34,6 @@ void game_reset(GameData* game) {
     game->game_over = 0;
     game->player_car.lane = 1;
     
-    // Clear all obstacles
     for (int i = 0; i < MAX_OBSTACLES; i++) {
         game->obstacles[i].active = 0;
     }
@@ -93,20 +92,20 @@ void render_playing(int oled_fd, GameData* game) {
     draw_road(oled_fd);
     
     // Dessine les lignes de vitesse (effet visuel)
-    // draw_speed_lines(oled_fd);
+    draw_speed_lines(oled_fd);
 
     // Dessine les obstacles
-    // for (int i = 0; i < MAX_OBSTACLES; i++) {
-    //     if (game->obstacles[i].active) {
-    //         draw_obstacle(oled_fd, &game->obstacles[i]);
-    //     }
-    // }
+    for (int i = 0; i < MAX_OBSTACLES; i++) {
+        if (game->obstacles[i].active) {
+            draw_obstacle(oled_fd, &game->obstacles[i]);
+        }
+    }
 
     // Dessine la voiture
     draw_car(oled_fd, &game->player_car);
 
     // Dessine le score et la distance en haut
-    // draw_score(oled_fd, game);
+    draw_score(oled_fd, game);
 }
 
 /* ======================= DRAWING HELPERS ======================= */
@@ -165,10 +164,14 @@ void draw_score(int oled_fd, GameData* game) {
     char score_text[30];
     
     sprintf(score_text, "Score:%u", game->score);
-    goldelox_put_string(oled_fd, 1, 0, COLOR_YELLOW, score_text);
+    goldelox_move_cursor(oled_fd, 1, 0);
+    goldelox_text_foreground_color(oled_fd, COLOR_YELLOW);
+    goldelox_put_string(oled_fd, score_text);
     
     sprintf(score_text, "Dist:%u", game->distance);
-    goldelox_put_string(oled_fd, 12, 0, COLOR_GREEN, score_text);
+    goldelox_move_cursor(oled_fd, 12, 0);
+    goldelox_text_foreground_color(oled_fd, COLOR_GREEN);
+    goldelox_put_string(oled_fd, score_text);
 }
 
 void draw_speed_lines(int oled_fd) {
@@ -176,10 +179,8 @@ void draw_speed_lines(int oled_fd) {
     offset = (offset + ROAD_SCROLL_SPEED) % 20;
     
     for (uint16_t y = offset; y < SCREEN_HEIGHT; y += 20) {
-        goldelox_draw_line(oled_fd, ROAD_X_START + 10, y, 
-                          ROAD_X_START + 15, y + 3, COLOR_DARK_GREEN);
-        goldelox_draw_line(oled_fd, ROAD_X_START + ROAD_WIDTH - 15, y, 
-                          ROAD_X_START + ROAD_WIDTH - 10, y + 3, COLOR_DARK_GREEN);
+        goldelox_draw_line(oled_fd, ROAD_X_START + 10, y, ROAD_X_START + 15, y + 3, COLOR_DARK_GREEN);
+        goldelox_draw_line(oled_fd, ROAD_X_START + ROAD_WIDTH - 15, y, ROAD_X_START + ROAD_WIDTH - 10, y + 3, COLOR_DARK_GREEN);
     }
 }
 

@@ -180,8 +180,8 @@ int open_serial(const char* port) {
     }
 
     // Configuration des vitesses de transmission asynchrone
-    cfsetospeed(&tty, B9600); // vitesse de sortie (TXD) - 115200 baud
-    cfsetispeed(&tty, B9600); // vitesse d'entrée (RXD) - 115200 baud
+    cfsetospeed(&tty, B9600); // vitesse de sortie (TXD) - 9600 baud
+    cfsetispeed(&tty, B9600); // vitesse d'entrée (RXD) - 9600 baud
 
     // Configuration des bits de données
     tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;     // 8 bits de données

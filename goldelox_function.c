@@ -223,7 +223,7 @@ void goldelox_draw_filled_rectangle(int fd, uint16_t x1, uint16_t y1, uint16_t x
         y2 >> 8, y2 & 0xFF,
         color >> 8, color & 0xFF
     };
-    if(_goldelox_send_and_wait_ack(fd, packet, 10) == 0) {
+    if(_goldelox_send_and_wait_ack(fd, packet, 12) == 0) {
         printf("✓ Rectangle plein dessiné\n");
     } else {
         fprintf(stderr, "✗ Draw Filled Rectangle: pas d'ACK\n");
